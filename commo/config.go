@@ -158,3 +158,23 @@ func (c Config) GetSenderName() string {
 
 	return ""
 }
+
+func (c BackoffConfig) Validate() (err error) {
+	if c.Timeout <= 0 {
+		return ErrConfigTimeout
+	}
+
+	if c.InitialInterval <= 0 {
+		return ErrConfigInitialInterval
+	}
+
+	if c.MaxInterval <= 0 {
+		return ErrConfigMaxInterval
+	}
+
+	if c.MaxElapsedTime <= 0 {
+		return ErrConfigMaxElapsedTime
+	}
+
+	return nil
+}

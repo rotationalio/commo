@@ -58,6 +58,11 @@ func Initialize(conf Config, templates map[string]*template.Template) (err error
 	return nil
 }
 
+// Loads templates into commo's internal template storage. Useful for testing.
+func WithTemplates(templates map[string]*template.Template) {
+	templs = templates
+}
+
 // Send an email using the configured send methodology. Uses exponential backoff to
 // retry multiple times on error with an increasing delay between attempts.
 func Send(email *Email) (err error) {

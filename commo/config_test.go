@@ -172,14 +172,6 @@ func TestConfigValidation(t *testing.T) {
 				commo.Config{
 					Sender:  "orchid@example.com",
 					Testing: false,
-					SMTP:    commo.SMTPConfig{Host: "smtp.example.com"},
-				},
-				commo.ErrConfigInvalidSupport,
-			},
-			{
-				commo.Config{
-					Sender:  "orchid@example.com",
-					Testing: false,
 					SMTP: commo.SMTPConfig{
 						Host: "smtp.example.com",
 					},

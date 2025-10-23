@@ -20,6 +20,7 @@ func TestRender(t *testing.T) {
 }
 
 func TestRenderUnknown(t *testing.T) {
+	commo.WithTemplates(loadTestTemplates())
 	_, _, err := commo.Render("foo", nil)
 	require.EqualError(t, err, "could not find \"foo.txt\" in templates", "expected unknown template")
 }
