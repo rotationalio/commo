@@ -12,13 +12,12 @@ import (
 
 // The emails config allows users to either send messages via SendGrid or via SMTP.
 type Config struct {
-	Sender       string         `split_words:"true" desc:"the email address that messages are sent from"`
-	SenderName   string         `split_words:"true" desc:"the name of the sender, usually the name of the organization"`
-	SupportEmail string         `split_words:"true" desc:"the email address to refer support requests to"`
-	Testing      bool           `split_words:"true" default:"false" desc:"set the emailer to testing mode to ensure no live emails are sent"`
-	SMTP         SMTPConfig     `split_words:"true"`
-	SendGrid     SendGridConfig `split_words:"false"`
-	Backoff      BackoffConfig  `split_words:"true"`
+	Sender     string         `split_words:"true" desc:"the email address that messages are sent from"`
+	SenderName string         `split_words:"true" desc:"the name of the sender, usually the name of the organization"`
+	Testing    bool           `split_words:"true" default:"false" desc:"set the emailer to testing mode to ensure no live emails are sent"`
+	SMTP       SMTPConfig     `split_words:"true"`
+	SendGrid   SendGridConfig `split_words:"false"`
+	Backoff    BackoffConfig  `split_words:"true"`
 }
 
 // Configuration for sending emails via SMTP.
@@ -64,12 +63,6 @@ func (c Config) Validate() (err error) {
 
 	if _, perr := mail.ParseAddress(c.Sender); perr != nil {
 		return ErrConfigInvalidSender
-	}
-
-	if c.SupportEmail != "" {
-		if _, perr := mail.ParseAddress(c.SupportEmail); perr != nil {
-			return ErrConfigInvalidSupport
-		}
 	}
 
 	// Cannot specify both email mechanisms

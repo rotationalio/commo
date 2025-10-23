@@ -12,7 +12,6 @@ import (
 var testEnv = map[string]string{
 	"EMAIL_SENDER":            "Jane Szack <jane@example.com>",
 	"EMAIL_SENDER_NAME":       "Jane Szack",
-	"EMAIL_SUPPORT_EMAIL":     "support@example.com",
 	"EMAIL_TESTING":           "true",
 	"EMAIL_SMTP_HOST":         "smtp.example.com",
 	"EMAIL_SMTP_PORT":         "25",
@@ -32,7 +31,6 @@ func TestConfig(t *testing.T) {
 	conf, err := config()
 	require.Equal(t, testEnv["EMAIL_SENDER"], conf.Sender)
 	require.Equal(t, testEnv["EMAIL_SENDER_NAME"], conf.SenderName)
-	require.Equal(t, testEnv["EMAIL_SUPPORT_EMAIL"], conf.SupportEmail)
 	require.True(t, conf.Testing)
 	require.Equal(t, testEnv["EMAIL_SMTP_HOST"], conf.SMTP.Host)
 	require.Equal(t, uint16(25), conf.SMTP.Port)
@@ -108,17 +106,15 @@ func TestConfigValidation(t *testing.T) {
 				},
 			},
 			{
-				Sender:       "peony@example.com",
-				SupportEmail: "support@example.com",
-				Testing:      false,
+				Sender:  "peony@example.com",
+				Testing: false,
 				SendGrid: commo.SendGridConfig{
 					APIKey: "sg:fakeapikey",
 				},
 			},
 			{
-				Sender:       "peony@example.com",
-				SupportEmail: "Support Peony <support@example.com>",
-				Testing:      false,
+				Sender:  "peony@example.com",
+				Testing: false,
 				SendGrid: commo.SendGridConfig{
 					APIKey: "sg:fakeapikey",
 				},
@@ -174,10 +170,9 @@ func TestConfigValidation(t *testing.T) {
 			},
 			{
 				commo.Config{
-					Sender:       "orchid@example.com",
-					SupportEmail: "foo",
-					Testing:      false,
-					SMTP:         commo.SMTPConfig{Host: "smtp.example.com"},
+					Sender:  "orchid@example.com",
+					Testing: false,
+					SMTP:    commo.SMTPConfig{Host: "smtp.example.com"},
 				},
 				commo.ErrConfigInvalidSupport,
 			},
