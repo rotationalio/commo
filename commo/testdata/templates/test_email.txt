@@ -1,0 +1,7 @@
+Hello{{ if .ContactName }} {{ .ContactName }}{{ end }},
+
+This is a test email from Rotational's commo library.
+
+There is nothing else to say.
+
+Have a nice day!

@@ -1,0 +1,185 @@
+package commo
+
+import (
+	"fmt"
+	"net/mail"
+	"net/smtp"
+	"time"
+
+	"github.com/jordan-wright/email"
+	"github.com/sendgrid/sendgrid-go"
+)
+
+// The emails config allows users to either send messages via SendGrid or via SMTP.
+type Config struct {
+	Sender     string         `split_words:"true" desc:"the email address that messages are sent from"`
+	SenderName string         `split_words:"true" desc:"the name of the sender, usually the name of the organization"`
+	Testing    bool           `split_words:"true" default:"false" desc:"set the emailer to testing mode to ensure no live emails are sent"`
+	SMTP       SMTPConfig     `split_words:"true"`
+	SendGrid   SendGridConfig `split_words:"false"`
+	Backoff    BackoffConfig  `split_words:"true"`
+}
+
+// Configuration for sending emails via SMTP.
+type SMTPConfig struct {
+	Host       string `required:"false" desc:"the smtp host without the port e.g. smtp.example.com; if set SMTP will be used, cannot be set with sendgrid api key"`
+	Port       uint16 `default:"587" desc:"the port to access the smtp server on"`
+	Username   string `required:"false" desc:"the username for authentication with the smtp server"`
+	Password   string `required:"false" desc:"the password for authentication with the smtp server"`
+	UseCRAMMD5 bool   `env:"USE_CRAM_MD5" default:"false" desc:"use CRAM-MD5 auth as defined in RFC 2195 instead of simple authentication"`
+	PoolSize   int    `split_words:"true" default:"2" desc:"the smtp connection pool size to use for concurrent email sending"`
+}
+
+// Configuration for sending emails using SendGrid.
+type SendGridConfig struct {
+	APIKey string `split_words:"true" required:"false" desc:"set the sendgrid api key to use sendgrid as the email backend"`
+}
+
+// Configuration for timeouts and retries when sending emails.
+type BackoffConfig struct {
+	Timeout         time.Duration `default:"30s" desc:"the time to wait for emails to send (default: 30 seconds)"`
+	InitialInterval time.Duration `split_words:"true" default:"3s" desc:"the initial time between tries (default: 3 seconds)"`
+	MaxInterval     time.Duration `split_words:"true" default:"45s" desc:"the maximum time between tries (default: 45 seconds)"`
+	MaxElapsedTime  time.Duration `split_words:"true" default:"180s" desc:"the the overall maximum time to try to send emails (default: 180 seconds)"`
+}
+
+// Returns true if either SMTP is configured or SendGrid is.
+func (c Config) Available() bool {
+	return c.SMTP.Enabled() || c.SendGrid.Enabled()
+}
+
+func (c Config) Validate() (err error) {
+	// It is important that if we're in testing mode that we do not validate the
+	// config because this creates dependencies for config validation in other modules.
+	// If the config is not available, then do not validate it.
+	if c.Testing || !c.Available() {
+		return nil
+	}
+
+	// Check that a from email exists and that it is parseable
+	if c.Sender == "" {
+		return ErrConfigMissingSender
+	}
+
+	if _, perr := mail.ParseAddress(c.Sender); perr != nil {
+		return ErrConfigInvalidSender
+	}
+
+	// Cannot specify both email mechanisms
+	if c.SMTP.Enabled() && c.SendGrid.Enabled() {
+		return ErrConfigConflict
+	}
+
+	// Validate the SMTP configuration
+	if c.SMTP.Enabled() {
+		if err = c.SMTP.Validate(); err != nil {
+			return err
+		}
+	}
+
+	// Validate the SendGrid configuration
+	if c.SendGrid.Enabled() {
+		if err = c.SendGrid.Validate(); err != nil {
+			return err
+		}
+	}
+
+	// Validate the backoff configuration
+	if err = c.Backoff.Validate(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c SMTPConfig) Enabled() bool {
+	return c.Host != ""
+}
+
+func (c SMTPConfig) Validate() (err error) {
+	// Do not validate if not enabled
+	if !c.Enabled() {
+		return nil
+	}
+
+	if c.Port == 0 {
+		return ErrConfigMissingPort
+	}
+
+	if c.PoolSize < 1 {
+		return ErrConfigPoolSize
+	}
+
+	if c.UseCRAMMD5 {
+		if c.Username == "" || c.Password == "" {
+			return ErrConfigCRAMMD5Auth
+		}
+	}
+
+	return nil
+}
+
+func (c SMTPConfig) Pool() (*email.Pool, error) {
+	return email.NewPool(c.Addr(), c.PoolSize, c.Auth())
+}
+
+func (c SMTPConfig) Auth() smtp.Auth {
+	if c.UseCRAMMD5 {
+		return smtp.CRAMMD5Auth(c.Username, c.Password)
+	}
+	return smtp.PlainAuth("", c.Username, c.Password, c.Host)
+}
+
+func (c SMTPConfig) Addr() string {
+	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}
+
+func (c SendGridConfig) Enabled() bool {
+	return c.APIKey != ""
+}
+
+func (c SendGridConfig) Validate() (err error) {
+	// Do not validate if not enabled
+	if !c.Enabled() {
+		return nil
+	}
+	return nil
+}
+
+func (c SendGridConfig) Client() *sendgrid.Client {
+	return sendgrid.NewSendClient(c.APIKey)
+}
+
+func (c Config) GetSenderName() string {
+	if c.SenderName != "" {
+		return c.SenderName
+	}
+
+	if c.Sender != "" {
+		if addr, err := mail.ParseAddress(c.Sender); err == nil {
+			return addr.Name
+		}
+	}
+
+	return ""
+}
+
+func (c BackoffConfig) Validate() (err error) {
+	if c.Timeout <= 0 {
+		return ErrConfigTimeout
+	}
+
+	if c.InitialInterval <= 0 {
+		return ErrConfigInitialInterval
+	}
+
+	if c.MaxInterval <= 0 {
+		return ErrConfigMaxInterval
+	}
+
+	if c.MaxElapsedTime <= 0 {
+		return ErrConfigMaxElapsedTime
+	}
+
+	return nil
+}
