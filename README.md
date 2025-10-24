@@ -30,4 +30,4 @@ err = email.Send()
 checkErr(err)
 ```
 
-See the test(s) in [commo/emails_test.go](commo/emails_test.go) for a full working example.
+See the test(s) in [commo/commo_test.go](./commo/commo_test.go) for a full working example.
