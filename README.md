@@ -12,7 +12,7 @@ checkErr(err)
 
 // Load templates
 var templates map[string]*template.Template
-templates = ... // not shown here; see `commo/emails_test.go` for full example
+templates = ... // not shown here; see `commo/commo_test.go` for full example
 
 // Initialize commo
 err = commo.Initialize(conf, templates)
