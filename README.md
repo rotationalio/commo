@@ -2,6 +2,9 @@
 
 An email rendering and sending package that can be configured to use either SendGrid or SMTP.
 
+* GitHub: <https://github.com/rotationalio/commo>
+* Go Docs: <https://go.rtnl.ai/commo>
+
 ## Usage
 
 First, add it to your module with `go get go.rtnl.ai/commo`.
