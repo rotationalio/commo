@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.rtnl.ai/commo/commo"
+	"go.rtnl.ai/commo"
 )
 
 func TestRender(t *testing.T) {

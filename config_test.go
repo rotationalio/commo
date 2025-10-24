@@ -7,7 +7,7 @@ import (
 
 	"github.com/rotationalio/confire"
 	"github.com/stretchr/testify/require"
-	"go.rtnl.ai/commo/commo"
+	"go.rtnl.ai/commo"
 )
 
 var testEnv = map[string]string{
