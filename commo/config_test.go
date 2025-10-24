@@ -3,6 +3,7 @@ package commo_test
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/rotationalio/confire"
 	"github.com/stretchr/testify/require"
@@ -71,10 +72,18 @@ func TestConfigAvailable(t *testing.T) {
 }
 
 func TestConfigValidation(t *testing.T) {
+	validBackoff := commo.BackoffConfig{
+		Timeout:         1 * time.Second,
+		InitialInterval: 1 * time.Second,
+		MaxInterval:     1 * time.Second,
+		MaxElapsedTime:  1 * time.Second,
+	}
+
 	t.Run("Valid", func(t *testing.T) {
 		testCases := []commo.Config{
 			{
 				Testing: false,
+				Backoff: validBackoff,
 			},
 			{
 				Sender:  "peony@example.com",
@@ -82,6 +91,7 @@ func TestConfigValidation(t *testing.T) {
 				SendGrid: commo.SendGridConfig{
 					APIKey: "sg:fakeapikey",
 				},
+				Backoff: validBackoff,
 			},
 			{
 				Sender:  "peony@example.com",
@@ -94,6 +104,7 @@ func TestConfigValidation(t *testing.T) {
 					UseCRAMMD5: false,
 					PoolSize:   4,
 				},
+				Backoff: validBackoff,
 			},
 			{
 				Testing: true,
@@ -104,6 +115,7 @@ func TestConfigValidation(t *testing.T) {
 				SendGrid: commo.SendGridConfig{
 					APIKey: "sg:fakeapikey",
 				},
+				Backoff: validBackoff,
 			},
 			{
 				Sender:  "peony@example.com",
@@ -111,6 +123,7 @@ func TestConfigValidation(t *testing.T) {
 				SendGrid: commo.SendGridConfig{
 					APIKey: "sg:fakeapikey",
 				},
+				Backoff: validBackoff,
 			},
 			{
 				Sender:  "peony@example.com",
@@ -118,6 +131,7 @@ func TestConfigValidation(t *testing.T) {
 				SendGrid: commo.SendGridConfig{
 					APIKey: "sg:fakeapikey",
 				},
+				Backoff: validBackoff,
 			},
 			{
 				Sender:  "peony@example.com",
@@ -125,6 +139,7 @@ func TestConfigValidation(t *testing.T) {
 				SendGrid: commo.SendGridConfig{
 					APIKey: "sg:fakeapikey",
 				},
+				Backoff: validBackoff,
 			},
 			{
 				Sender:  "peony@example.com",
@@ -132,6 +147,7 @@ func TestConfigValidation(t *testing.T) {
 				SendGrid: commo.SendGridConfig{
 					APIKey: "sg:fakeapikey",
 				},
+				Backoff: validBackoff,
 			},
 		}
 
@@ -215,6 +231,70 @@ func TestConfigValidation(t *testing.T) {
 					},
 				},
 				commo.ErrConfigCRAMMD5Auth,
+			},
+			{
+				commo.Config{
+					Sender:  "peony@example.com",
+					Testing: false,
+					SendGrid: commo.SendGridConfig{
+						APIKey: "sg:fakeapikey",
+					},
+					Backoff: commo.BackoffConfig{
+						InitialInterval: time.Duration(0 * time.Second),
+						MaxElapsedTime:  time.Duration(1 * time.Second),
+						MaxInterval:     time.Duration(1 * time.Second),
+						Timeout:         time.Duration(1 * time.Second),
+					},
+				},
+				commo.ErrConfigInitialInterval,
+			},
+			{
+				commo.Config{
+					Sender:  "peony@example.com",
+					Testing: false,
+					SendGrid: commo.SendGridConfig{
+						APIKey: "sg:fakeapikey",
+					},
+					Backoff: commo.BackoffConfig{
+						InitialInterval: time.Duration(1 * time.Second),
+						MaxElapsedTime:  time.Duration(0 * time.Second),
+						MaxInterval:     time.Duration(1 * time.Second),
+						Timeout:         time.Duration(1 * time.Second),
+					},
+				},
+				commo.ErrConfigMaxElapsedTime,
+			},
+			{
+				commo.Config{
+					Sender:  "peony@example.com",
+					Testing: false,
+					SendGrid: commo.SendGridConfig{
+						APIKey: "sg:fakeapikey",
+					},
+					Backoff: commo.BackoffConfig{
+						InitialInterval: time.Duration(1 * time.Second),
+						MaxElapsedTime:  time.Duration(1 * time.Second),
+						MaxInterval:     time.Duration(0 * time.Second),
+						Timeout:         time.Duration(1 * time.Second),
+					},
+				},
+				commo.ErrConfigMaxInterval,
+			},
+			{
+				commo.Config{
+					Sender:  "peony@example.com",
+					Testing: false,
+					SendGrid: commo.SendGridConfig{
+						APIKey: "sg:fakeapikey",
+					},
+					Backoff: commo.BackoffConfig{
+						InitialInterval: time.Duration(1 * time.Second),
+						MaxElapsedTime:  time.Duration(1 * time.Second),
+						MaxInterval:     time.Duration(1 * time.Second),
+						Timeout:         time.Duration(0 * time.Second),
+					},
+				},
+				commo.ErrConfigTimeout,
 			},
 		}
 

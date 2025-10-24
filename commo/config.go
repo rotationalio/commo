@@ -84,6 +84,11 @@ func (c Config) Validate() (err error) {
 		}
 	}
 
+	// Validate the backoff configuration
+	if err = c.Backoff.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
