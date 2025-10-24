@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.rtnl.ai/commo/commo"
+	"go.rtnl.ai/commo"
 )
 
 func TestEmailValidate(t *testing.T) {

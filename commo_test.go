@@ -12,7 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rotationalio/confire"
 	"github.com/stretchr/testify/require"
-	"go.rtnl.ai/commo/commo"
+	"go.rtnl.ai/commo"
 )
 
 func TestLiveEmails(t *testing.T) {

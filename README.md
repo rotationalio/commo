@@ -2,9 +2,16 @@
 
 An email rendering and sending package that can be configured to use either SendGrid or SMTP.
 
+* GitHub: <https://github.com/rotationalio/commo>
+* Go Docs: <https://go.rtnl.ai/commo>
+
 ## Usage
 
+First, add it to your module with `go get go.rtnl.ai/commo`.
+
 ```go
+import "go.rtnl.ai/commo"
+
 // Load configuration from a .env file
 conf := commo.Config{}
 err := confire.Process("commo_email", &conf)
@@ -30,4 +37,12 @@ err = email.Send()
 checkErr(err)
 ```
 
-See the test(s) in [commo/commo_test.go](./commo/commo_test.go) for a full working example.
+See the test `TestLiveEmails` in [`commo_test.go`](./commo_test.go) for a full working example.
+
+## License
+
+See [LICENSE](./LICENSE)
+
+## Naming
+
+See <https://en.wikipedia.org/wiki/Communications_officer> for information on why this library is named "COMMO".

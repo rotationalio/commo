@@ -7,20 +7,24 @@ import (
 
 	"github.com/rotationalio/confire"
 	"github.com/stretchr/testify/require"
-	"go.rtnl.ai/commo/commo"
+	"go.rtnl.ai/commo"
 )
 
 var testEnv = map[string]string{
-	"EMAIL_SENDER":            "Jane Szack <jane@example.com>",
-	"EMAIL_SENDER_NAME":       "Jane Szack",
-	"EMAIL_TESTING":           "true",
-	"EMAIL_SMTP_HOST":         "smtp.example.com",
-	"EMAIL_SMTP_PORT":         "25",
-	"EMAIL_SMTP_USERNAME":     "jszack",
-	"EMAIL_SMTP_PASSWORD":     "supersecret",
-	"EMAIL_SMTP_USE_CRAM_MD5": "true",
-	"EMAIL_SMTP_POOL_SIZE":    "16",
-	"EMAIL_SENDGRID_API_KEY":  "sg:fakeapikey",
+	"EMAIL_SENDER":                   "Jane Szack <jane@example.com>",
+	"EMAIL_SENDER_NAME":              "Jane Szack",
+	"EMAIL_TESTING":                  "true",
+	"EMAIL_SMTP_HOST":                "smtp.example.com",
+	"EMAIL_SMTP_PORT":                "25",
+	"EMAIL_SMTP_USERNAME":            "jszack",
+	"EMAIL_SMTP_PASSWORD":            "supersecret",
+	"EMAIL_SMTP_USE_CRAM_MD5":        "true",
+	"EMAIL_SMTP_POOL_SIZE":           "16",
+	"EMAIL_SENDGRID_API_KEY":         "sg:fakeapikey",
+	"EMAIL_BACKOFF_TIMEOUT":          "1s",
+	"EMAIL_BACKOFF_INITIAL_INTERVAL": "1s",
+	"EMAIL_BACKOFF_MAX_INTERVAL":     "1s",
+	"EMAIL_BACKOFF_MAX_ELAPSED_TIME": "1s",
 }
 
 func TestConfig(t *testing.T) {
@@ -41,6 +45,18 @@ func TestConfig(t *testing.T) {
 	require.Equal(t, 16, conf.SMTP.PoolSize)
 	require.Equal(t, testEnv["EMAIL_SENDGRID_API_KEY"], conf.SendGrid.APIKey)
 	require.NoError(t, err, "could not process configuration from the environment")
+	dur, err := time.ParseDuration(testEnv["EMAIL_BACKOFF_TIMEOUT"])
+	require.NoError(t, err)
+	require.Equal(t, dur, conf.Backoff.Timeout)
+	dur, err = time.ParseDuration(testEnv["EMAIL_BACKOFF_INITIAL_INTERVAL"])
+	require.NoError(t, err)
+	require.Equal(t, dur, conf.Backoff.InitialInterval)
+	dur, err = time.ParseDuration(testEnv["EMAIL_BACKOFF_MAX_INTERVAL"])
+	require.NoError(t, err)
+	require.Equal(t, dur, conf.Backoff.MaxInterval)
+	dur, err = time.ParseDuration(testEnv["EMAIL_BACKOFF_MAX_ELAPSED_TIME"])
+	require.NoError(t, err)
+	require.Equal(t, dur, conf.Backoff.MaxElapsedTime)
 }
 
 func TestConfigAvailable(t *testing.T) {

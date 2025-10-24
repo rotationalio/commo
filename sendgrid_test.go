@@ -5,7 +5,7 @@ import (
 
 	sgmail "github.com/sendgrid/sendgrid-go/helpers/mail"
 	"github.com/stretchr/testify/require"
-	"go.rtnl.ai/commo/commo"
+	"go.rtnl.ai/commo"
 )
 
 func TestNewSGEmail(t *testing.T) {
